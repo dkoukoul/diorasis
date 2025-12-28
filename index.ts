@@ -1,0 +1,1 @@
+import "./src/infra/http/server";

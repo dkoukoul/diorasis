@@ -1,0 +1,108 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Organization {
+  uid       String   @id
+  label     String
+  decisions Decision[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model DecisionType {
+  uid                String     @id
+  label              String
+  allowedInDecisions Boolean
+  decisions          Decision[]
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+}
+
+model Decision {
+  ada                 String       @id
+  protocolNumber      String?
+  subject             String
+  publishDate         DateTime
+  submissionTimestamp String
+  decisionTypeId      String
+  decisionType        DecisionType @relation(fields: [decisionTypeId], references: [uid])
+  organizationId      String
+  organization        Organization @relation(fields: [organizationId], references: [uid])
+  unitIds             String[]
+  signerIds           String[]
+  status              String
+  url                 String
+  documentUrl         String
+  amount              Float?
+  region              String?
+  city                String?
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+
+  @@index([organizationId])
+  @@index([decisionTypeId])
+  @@index([publishDate])
+  @@index([region])
+}
+
+model PropertyValuation {
+  id                String   @id @default(uuid())
+  region            String
+  estimatedValue    Float
+  marketTrend       Float
+  objectiveValue    Float
+  infrastructureScore Float
+  timestamp         DateTime @default(now())
+}
+
+model Company {
+  id               String   @id @default(uuid())
+  gemiNumber       String   @unique
+  vatNumber        String?  @unique // AFM
+  name             String
+  distinctiveTitle String?
+  status           String?
+  legalForm        String?
+  address          String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([vatNumber])
+  @@index([gemiNumber])
+}
+
+model EconomicIndicator {
+  id          String   @id @default(uuid())
+  name        String
+  category    String?  @default("general")
+  value       Float
+  unit        String
+  period      String
+  source      String   @default("Bank of Greece")
+  timestamp   DateTime @default(now())
+  metadata    Json?    @default("{}")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([name])
+  @@index([category])
+}
+
+model SearchLog {
+  id        String   @id @default(uuid())
+  query     String?
+  orgId     String?
+  typeId    String?
+  from      String?
+  to        String?
+  timestamp DateTime @default(now())
+}
